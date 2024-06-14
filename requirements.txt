@@ -1,0 +1,6 @@
+auth0-python
+pyinstaller
+requests
+rich
+tabulate
+validators
