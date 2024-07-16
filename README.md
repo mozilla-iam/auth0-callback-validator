@@ -7,6 +7,8 @@ This proposal outlines the development of a Python-based software tool designed 
 * Primary Objective: To create a Python tool that takes a client_id, retrieves the client applications callback list, validates each callback URL against specified criteria, and returns their validity status.
 * Usability Goal: To provide a straightforward and efficient mechanism for validating multiple OIDC or SAML callback URLs at once, ensuring they meet the necessary criteria for successful interactions.
 
+## Techstack
+Python 3.12.3
 
 ## Running Tests
 Run the command:
@@ -18,3 +20,5 @@ Run the commands:
 
 ```cd validator```
 ```pyinstall --onefile validator```
+
+## Running the executable

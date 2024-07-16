@@ -3,6 +3,7 @@
 """
 
 from auth import Auth
+from config import Config
 import logging
 import requests
 
@@ -31,6 +32,7 @@ def format_table(client_id, table_data):
 
 def get_user_inputs():
     # get cli data passed in
+
     try:
         client_id = sys.argv[1]
         return client_id
@@ -97,12 +99,15 @@ def get_all_client_callbacks(app_auth):
             logging.info(f"Client {client['client_id']} has 0 callback urls")
 
 def usage():
-    print("Usage: This script expects a client id or command line switch to passed in on the comman line\n \n -with client_id: python3 validator.py <client_id>\n -all clients: python3 validator.py -a\n -usage: python3 validator.py -h \n \n")
+    print("Usage: This script expects a client id or command line switch to passed in on the comman line\n \n -with client_id: python3 validator.py <client_id>\n -all clients: python3 validator.py -a\n -file: python3 validator.py -f auth.env <client_id>\n -help: python3 validator.py -h \n \n")
 
 def main():
+    # initialixe Config class
+    config_vars = Config()
     # initialize Auth class
-    app_auth = Auth()
+    app_auth = Auth(config_vars)
     client_id = get_user_inputs()
+    print(f"arguements:  {client_id}")
 
     if client_id == "-a":
         get_all_client_callbacks(app_auth)

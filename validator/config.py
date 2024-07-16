@@ -1,15 +1,28 @@
+from dotenv import load_dotenv
+
+import logging
 import os
 
 '''
 Methods to pull configuration data from environment variables
 '''
 
-def get_auth0_domain():
-    return os.environ.get("AUTH0_DOMAIN")
+class Config():
 
-def get_auth0_client_id():
-    return os.environ.get("AUTH0_CLIENT_ID")
+    logging.basicConfig(level=logging.INFO, filemode="a", filename="validator.log", format="%(asctime)s %(levelname)s %(message)s")
 
-def get_auth0_client_secret():
-    return os.environ.get("AUTH0_CLIENT_SECRET")
+    def __init__(self):
+        load_dotenv()
+
+    def get_auth0_domain(self):
+      #  print(f"AUTH0_DOMAIN: {os.environ.get('AUTH0_DOMAIN')}")
+        return os.environ.get("AUTH0_DOMAIN")
+
+    def get_auth0_client_id(self):
+     #   print(f"AUTH0_CLIENT_ID: {os.environ.get('AUTH0_CLIENT_ID')}")
+        return os.environ.get("AUTH0_CLIENT_ID")
+
+    def get_auth0_client_secret(self):
+     #   print(f"AUTH0_CLIENT_SECRET: {os.environ.get('AUTH0_CLIENT_SECRET')}")
+        return os.environ.get("AUTH0_CLIENT_SECRET")
 
