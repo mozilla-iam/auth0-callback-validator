@@ -28,7 +28,7 @@ class Auth():
         self.mgmt_client_secret = self.config_vars.get_auth0_client_secret()
 
         if (self.mgmt_domain == None or self.mgmt_client_id == None or self.mgmt_client_secret == None):
-            print("Usage: You have to define environment variables named:\n \n \t* AUTH0_DOMAIN\n \t* AUTH0_CLIENT_ID\n \t* AUTH0_CLIENT_SECRET\n Or define the variables in a file named .env\nThis will allow the tool to generate a token to access the Auth0 api")
+            print("\nConfig: You have to define environment variables named:\n \n \t* AUTH0_DOMAIN\n \t* AUTH0_CLIENT_ID\n \t* AUTH0_CLIENT_SECRET\n\nOr define the variables in a file named .env\nThis will allow the tool to generate a token to access the Auth0 Management API\n\n\n")
             sys.exit(1)
 
     #get auth0 token

@@ -13,16 +13,17 @@ class Config():
 
     def __init__(self):
         load_dotenv()
+        self.domain = os.getenv('AUTH0_DOMAIN')
+        self.client_id = os.getenv('AUTH0_CLIENT_ID')
+        self.client_secret = os.getenv('AUTH0_CLIENT_SECRET')
+
 
     def get_auth0_domain(self):
-      #  print(f"AUTH0_DOMAIN: {os.environ.get('AUTH0_DOMAIN')}")
-        return os.environ.get("AUTH0_DOMAIN")
+        return self.domain
 
     def get_auth0_client_id(self):
-     #   print(f"AUTH0_CLIENT_ID: {os.environ.get('AUTH0_CLIENT_ID')}")
-        return os.environ.get("AUTH0_CLIENT_ID")
+        return self.client_id
 
     def get_auth0_client_secret(self):
-     #   print(f"AUTH0_CLIENT_SECRET: {os.environ.get('AUTH0_CLIENT_SECRET')}")
-        return os.environ.get("AUTH0_CLIENT_SECRET")
+        return self.client_secret
 

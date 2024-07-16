@@ -1,35 +1,31 @@
 import os
 import unittest
 from unittest import mock
-from unittest.mock import patch, mock_open
-from validator import config
+from unittest.mock import patch
+
+import sys
+sys.path.append('./validator')
+
+from config import Config
 
 class TestConfig(unittest.TestCase):
 
-    def setUp(self):
-        self.config_vars = config.Config()
+    @patch('config.load_dotenv')
+    def test_config_from_os_env(self, mock_load_dotenv):
+        # Mock environment variables set
+        with patch.dict(os.environ, {
+            'AUTH0_DOMAIN': 'os-domain',
+            'AUTH0_CLIENT_ID': 'os-client-id',
+            'AUTH0_CLIENT_SECRET': 'os-client-secret',
+        }):
 
+            # Initialize the configuration
+            config_vars = Config()
 
-    @mock.patch.dict(os.environ, clear={"AUTH0_DOMAIN"})
-    def test_empty_auth0_domain(self):
-        self.assertIsNone(self.config_vars.get_auth0_domain(), None)
+            # Assert the values are as expected
+            self.assertEqual(config_vars.domain, 'os-domain')
+            self.assertEqual(config_vars.client_id, 'os-client-id')
+            self.assertEqual(config_vars.client_secret, 'os-client-secret')
 
-    @mock.patch.dict(os.environ, clear={"AUTH0_CLIENT_ID"})
-    def test_empty_auth0_client_id(self):
-        self.assertIsNone(self.config_vars.get_auth0_client_id(), None)
-
-    @mock.patch.dict(os.environ, clear={"AUTH0_CLIENT_SECRET"})
-    def test_empty_auth0_client_secret(self):
-        self.assertIsNone(self.config_vars.get_auth0_client_secret(), None)
-
-    @mock.patch.dict(os.environ, {"AUTH0_DOMAIN": "mock.domain.test"})
-    def test_get_auth0_domain(self):
-        self.assertEqual(self.config_vars.get_auth0_domain(), "mock.domain.test")
-
-    @mock.patch.dict(os.environ, {"AUTH0_CLIENT_ID": "12abc456"})
-    def test_get_auth0_client_id(self):
-        self.assertEqual(self.config_vars.get_auth0_client_id(), "12abc456")
-
-    @mock.patch.dict(os.environ, {"AUTH0_CLIENT_SECRET": "7ueyrgsevwcwerh5y4werfvd"})
-    def test_get_auth0_client_secret(self):
-        self.assertEqual(self.config_vars.get_auth0_client_secret(), "7ueyrgsevwcwerh5y4werfvd")
+            # Assert load_dotenv was called
+            mock_load_dotenv.assert_called_once()

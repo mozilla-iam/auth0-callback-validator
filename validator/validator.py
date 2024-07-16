@@ -3,6 +3,7 @@
 """
 
 from auth import Auth
+from colors import Colors
 from config import Config
 import logging
 import requests
@@ -99,16 +100,17 @@ def get_all_client_callbacks(app_auth):
             logging.info(f"Client {client['client_id']} has 0 callback urls")
 
 def usage():
-    print("Usage: This script expects a client id or command line switch to passed in on the comman line\n \n -with client_id: python3 validator.py <client_id>\n -all clients: python3 validator.py -a\n -file: python3 validator.py -f auth.env <client_id>\n -help: python3 validator.py -h \n \n")
+    print(f"\nThis script can be used to retrieve callback urls for a single client id or all clients \n \n -{Colors.bold}{Colors.green}search by client_id:{Colors.reset} python3 validator.py <client_id>\n -{Colors.bold}{Colors.green}retrieve all:{Colors.reset} python3 validator.py -a\n {Colors.bold}{Colors.green}-h(elp):{Colors.reset} python3 validator.py -h \n \n")
 
 def main():
     # initialixe Config class
     config_vars = Config()
+
     # initialize Auth class
     app_auth = Auth(config_vars)
     client_id = get_user_inputs()
-    print(f"arguements:  {client_id}")
 
+    #process command line arguments
     if client_id == "-a":
         get_all_client_callbacks(app_auth)
     elif client_id == "-h":
