@@ -104,20 +104,23 @@ def usage():
     print(f"\nThis script can be used to retrieve callback urls for a single client id or all clients \n \n -{Colors.bold}{Colors.green}search by client_id:{Colors.reset} python3 validator.py <client_id>\n -{Colors.bold}{Colors.green}retrieve all:{Colors.reset} python3 validator.py -a\n {Colors.bold}{Colors.green}-h(elp):{Colors.reset} python3 validator.py -h \n \n")
 
 def main():
-    # initialixe Config class
-    config_vars = Config()
-
-    # initialize Auth class
-    app_auth = Auth(config_vars)
+    #process command line arguments
     client_id = get_user_inputs()
 
-    #process command line arguments
-    if client_id == "-a":
-        get_all_client_callbacks(app_auth)
-    elif client_id == "-h":
+    #show usage message
+    if client_id == "-h":
         usage()
     else:
-        get_client_callbacks(app_auth, client_id)
+        # initialixe Config class
+        config_vars = Config()
+
+        # initialize Auth class
+        app_auth = Auth(config_vars)
+
+        if client_id == "-a":
+            get_all_client_callbacks(app_auth)
+        else:
+            get_client_callbacks(app_auth, client_id)
 
 if __name__ == "__main__":
     main()
