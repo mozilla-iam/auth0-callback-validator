@@ -34,6 +34,18 @@ Run the command:
 
 ```python3 -m unittest```
 
+## Running Code
+Run the command:
+
+```python3 validator/validator.py```
+
+#### Examples
+- show help message: ```python3 validator/validator.py -h```
+
+- retrieve callback urls for all clients: ```python3 validator/validator.py -a```
+
+- retrieve callback urls for one client: ```python3 validator/validator.py client_id```
+
 ## Building an executable
 Run the commands:
 
@@ -41,4 +53,11 @@ Run the commands:
 ```pyinstaller --onefile validator.py```
 
 ## Running the executable
-pyinstaller will create the final executable in the ```dist``` directory and will be named ```validator```. You can run the executable by typing the command ```validator```.
+pyinstaller will create the final executable in the ```dist``` directory and will be named ```validator```. You can run the executable by typing the command ```validator``` with the appropriate flags or values
+
+#### Examples
+- show help message: ```./validator -h```
+
+- retrieve callback urls for all clients: ```./validator -a```
+
+- retrieve callback urls for one client: ```./validator client_id```
