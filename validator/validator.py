@@ -47,6 +47,7 @@ def get_client_callbacks(app_auth, client_id):
     if (client_data is None):
         print(f"Can not find data for client: {client_id}")
         logging.info(f"INFO: Can not find data for client: {client_id}")
+        sys.exit(1)
 
     table_data = []
 
