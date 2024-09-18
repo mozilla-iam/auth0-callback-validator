@@ -44,22 +44,41 @@ class Auth():
                 self.auth_client = Auth0(self.mgmt_domain, self.mgmt_api_token)
 
         except Exception as e:
-            logging.error(f"Call to get token for Auth0 domain: {self.mgmt_domain} failed due to error: {e}")
+            logging.exception(f"Call to get token for Auth0 domain: {self.mgmt_domain} failed due to error: {e}")
             print(f"Call to get token for Auth0 domain: {self.mgmt_domain} failed due to error: {e}")
             sys.exit(1)
 
     #get callbacks for specific client id
     def auth0_get_client_callbacks(self, client_id):
+        # Note: It looks like the SDK doesn't have pagination in the `get` call,
+        #   so those arguments are absent from this call.
         try:
-            client_data = self.auth_client.clients.get(client_id, fields=["client_id", "callbacks"], include_fields=True)
+            client_data = self.auth_client.clients.get(
+                client_id,
+                fields=["client_id", "callbacks"],
+                include_fields=True
+            )
             return client_data
         except Exception as e:
             logging.error(f"Error retrieving client data: {client_id} for domain: {self.mgmt_domain}, error given: {e}")
 
     #get callbacks for all clients
     def auth0_get_all_clients_callbacks(self):
-        try:
-            client_data = self.auth_client.clients.all(fields=["client_id", "callbacks"], include_fields=True)
-            return client_data
-        except Exception as e:
-            logging.error(f"Error retrieving all clients {e}")
+        current_page = 0
+        all_client_data = []
+
+        while True:
+            try:
+                client_data = self.auth_client.clients.all(
+                    fields=["client_id", "callbacks"],
+                    include_fields=True,
+                    per_page=100,
+                    page=current_page
+                )
+                if len(client_data) <= 0:
+                    break
+                all_client_data += client_data
+                current_page += 1
+            except Exception as e:
+                logging.error(f"Error retrieving all clients {e}")
+        return all_client_data
