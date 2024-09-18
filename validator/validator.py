@@ -33,13 +33,37 @@ def format_table(client_id, table_data):
 
 def get_user_inputs():
     # get cli data passed in
+    # Note: This should use a proper cli library but hacking around it
+    #   because this is supposed to be a unimportant script - Eric
+
+    client_id = None
+    arguments = []
 
     try:
-        client_id = sys.argv[1]
-        return client_id
+        for argument in sys.argv[1:]:
+            if argument[0] == '-':
+                if argument not in ['-a', '-h', '--include-valid']:
+                    usage()
+                    logging.error("Error: invalid argument {}".format(argument))
+                    print("Error: invalid argument {}".format(argument))
+                    sys.exit(1)
+                arguments.append(argument)
+            else:
+                if not client_id:
+                    client_id = argument
+                else:
+                    logging.error("Error: only one client_id expected")
+                    print("Error: only one client_id expected")
+                    sys.exit(1)
+
+        if not client_id and ('-a' not in arguments) and ('-h' not in arguments):
+            logging.error("Error: either `-h` must be specified or one of client_id or `-a`")
+            print("Error: either `-h` must be specified or one of client_id or `-a`")
+            sys.exit(1)
+        return client_id, arguments
     except IndexError:
         usage()
-        logging.error("Error: client_id was not passed into application")
+        logging.error("Error: no arguments were passed into application")
         sys.exit(1)
 
 def get_client_callbacks(app_auth, client_id):
@@ -70,7 +94,7 @@ def get_client_callbacks(app_auth, client_id):
     if len(table_data):
         format_table(client_id, table_data)
 
-def get_all_client_callbacks(app_auth):
+def get_all_client_callbacks(app_auth, include_valid=False):
     client_data = app_auth.auth0_get_all_clients_callbacks()
     if (client_data is None):
         print("Can not find client data")
@@ -87,10 +111,14 @@ def get_all_client_callbacks(app_auth):
                     try:
                         response = requests.head(url, timeout=5)
                         if (response.status_code != 404):
-                            table_data.append([url, "True"])
+                            if include_valid:
+                                table_data.append([url, "True"])
 
-                    except Exception:
-                        table_data.append([url, "False"])
+                    except Exception as e:
+                        logging.error(
+                            "Reached exception attempting to validate `{}` for client id `{}`:\n{}\n\n".format(url, client['client_id'], e)
+                        )
+                        table_data.append([url, "False - {}".format(type(e).__name__)])
                         continue
 
             #format report
@@ -101,14 +129,14 @@ def get_all_client_callbacks(app_auth):
             logging.info(f"Client {client['client_id']} has 0 callback urls")
 
 def usage():
-    print(f"\nThis script can be used to retrieve callback urls for a single client id or all clients \n \n -{Colors.bold}{Colors.green}search by client_id:{Colors.reset} python3 validator.py <client_id>\n -{Colors.bold}{Colors.green}retrieve all:{Colors.reset} python3 validator.py -a\n {Colors.bold}{Colors.green}-h(elp):{Colors.reset} python3 validator.py -h \n \n")
+    print(f"\nThis script can be used to retrieve callback urls for a single client id or all clients \n \n -{Colors.bold}{Colors.green}search by client_id:{Colors.reset} python3 validator.py <client_id>\n -{Colors.bold}{Colors.green}retrieve all:{Colors.reset} python3 validator.py -a\n    - {Colors.bold}{Colors.green}Include invalid (only with `-a`):{Colors.reset} python3 validator.py -a --include-valid \n -{Colors.bold}{Colors.green}h(elp):{Colors.reset} python3 validator.py -h \n \n")
 
 def main():
     #process command line arguments
-    client_id = get_user_inputs()
+    client_id, arguments = get_user_inputs()
 
     #show usage message
-    if client_id == "-h":
+    if '-h' in arguments:
         usage()
     else:
         # initialixe Config class
@@ -117,8 +145,8 @@ def main():
         # initialize Auth class
         app_auth = Auth(config_vars)
 
-        if client_id == "-a":
-            get_all_client_callbacks(app_auth)
+        if '-a' in arguments:
+            get_all_client_callbacks(app_auth, '--include-valid' in arguments)
         else:
             get_client_callbacks(app_auth, client_id)
 
