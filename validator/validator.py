@@ -2,6 +2,7 @@
     OIDC/SAML Callback URL Validator - this application is used to help audit
 """
 
+import json
 from auth import Auth
 from colors import Colors
 from config import Config
@@ -42,7 +43,7 @@ def get_user_inputs():
     try:
         for argument in sys.argv[1:]:
             if argument[0] == '-':
-                if argument not in ['-a', '-h', '--include-valid']:
+                if argument not in ['-a', '-h', '--include-valid', '--json']:
                     usage()
                     logging.error("Error: invalid argument {}".format(argument))
                     print("Error: invalid argument {}".format(argument))
@@ -66,7 +67,7 @@ def get_user_inputs():
         logging.error("Error: no arguments were passed into application")
         sys.exit(1)
 
-def get_client_callbacks(app_auth, client_id):
+def get_client_callbacks(app_auth, client_id, json_output=False):
     client_data = app_auth.auth0_get_client_callbacks(client_id)
     if (client_data is None):
         print(f"Can not find data for client: {client_id}")
@@ -84,21 +85,32 @@ def get_client_callbacks(app_auth, client_id):
                 try:
                     response = requests.head(url, timeout=5)
                     if (response.status_code != 404):
-                        table_data.append([url, "True"])
+                        if json_output:
+                            table_data.append({'url': url, 'valid': True})
+                        else:
+                            table_data.append([url, "True"])
 
-                except Exception:
-                    table_data.append([url, "False"])
+                except Exception as e:
+                    if json_output:
+                        table_data.append({'url': url, 'valid': "False - {}".format(type(e).__name__)})
+                    else:
+                        table_data.append([url, "False - {}".format(type(e).__name__)])
                     continue
 
     #format report
     if len(table_data):
-        format_table(client_id, table_data)
+        if json_output:
+            print(json.dumps({client_id: table_data}))
+        else:
+            format_table(client_id, table_data)
 
-def get_all_client_callbacks(app_auth, include_valid=False):
+def get_all_client_callbacks(app_auth, include_valid=False, json_output=False):
     client_data = app_auth.auth0_get_all_clients_callbacks()
     if (client_data is None):
         print("Can not find client data")
         logging.info("INFO: Can not find client data")
+    
+    json_callbacks = {}
 
     for client in client_data:
         if "callbacks" in client.keys() and len(client["callbacks"]) > 0:
@@ -112,24 +124,36 @@ def get_all_client_callbacks(app_auth, include_valid=False):
                         response = requests.head(url, timeout=5)
                         if (response.status_code != 404):
                             if include_valid:
-                                table_data.append([url, "True"])
+                                if json_output:
+                                    table_data.append({'url': url, 'valid': True})
+                                else:
+                                    table_data.append([url, "True"])
 
                     except Exception as e:
                         logging.error(
                             "Reached exception attempting to validate `{}` for client id `{}`:\n{}\n\n".format(url, client['client_id'], e)
                         )
-                        table_data.append([url, "False - {}".format(type(e).__name__)])
+                        if json_output:
+                            table_data.append({'url': url, 'valid': "False - {}".format(type(e).__name__)})
+                        else:
+                            table_data.append([url, "False - {}".format(type(e).__name__)])
                         continue
 
             #format report
             if len(table_data):
-                format_table(client["client_id"], table_data)
+                if json_output:
+                    json_callbacks[client['client_id']] = table_data
+                else:
+                    format_table(client["client_id"], table_data)
 
         else:
             logging.info(f"Client {client['client_id']} has 0 callback urls")
+        
+    if json_output:
+        print(json.dumps(json_callbacks))
 
 def usage():
-    print(f"\nThis script can be used to retrieve callback urls for a single client id or all clients \n \n -{Colors.bold}{Colors.green}search by client_id:{Colors.reset} python3 validator.py <client_id>\n -{Colors.bold}{Colors.green}retrieve all:{Colors.reset} python3 validator.py -a\n    - {Colors.bold}{Colors.green}Include invalid (only with `-a`):{Colors.reset} python3 validator.py -a --include-valid \n -{Colors.bold}{Colors.green}h(elp):{Colors.reset} python3 validator.py -h \n \n")
+    print(f"\nThis script can be used to retrieve callback urls for a single client id or all clients \n \n -{Colors.bold}{Colors.green}search by client_id:{Colors.reset} python3 validator.py <client_id>\n -{Colors.bold}{Colors.green}retrieve all:{Colors.reset} python3 validator.py -a\n    - {Colors.bold}{Colors.green}Include invalid (only with `-a`):{Colors.reset} python3 validator.py -a --include-valid \n -{Colors.bold}{Colors.green}output as JSON:{Colors.reset} python3 validator.py -a --json\n -{Colors.bold}{Colors.green}h(elp):{Colors.reset} python3 validator.py -h \n \n")
 
 def main():
     #process command line arguments
@@ -146,9 +170,9 @@ def main():
         app_auth = Auth(config_vars)
 
         if '-a' in arguments:
-            get_all_client_callbacks(app_auth, '--include-valid' in arguments)
+            get_all_client_callbacks(app_auth, '--include-valid' in arguments, '--json' in arguments)
         else:
-            get_client_callbacks(app_auth, client_id)
+            get_client_callbacks(app_auth, client_id, '--json' in arguments)
 
 if __name__ == "__main__":
     main()
